@@ -1,0 +1,80 @@
+# BEGIN WordPress
+<IfModule mod_rewrite.c>
+RewriteEngine On
+RewriteBase /
+RewriteRule ^index\.php$ - [L]
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule . /index.php [L]
+</IfModule>
+
+# END WordPress
+
+#Bloquer accès au .htaccess
+<Files .htaccess>
+order allow,deny
+deny from all
+</Files>
+
+#Bloquer accès au wp-config
+<Files wp-config.php>
+order allow,deny
+deny from all
+</Files>
+
+#Bloquer accès au fichier xmlrpc.php (vieilles versions wp)
+<Files xmlrpc.php>
+order deny,allow
+deny from all
+</Files>
+
+#Bloquer accès aux fichiers de débugages
+<Files debug.log>
+order deny,allow
+deny from all
+</Files>
+
+#Là on désactive le fait de chercher depuis l'url
+Options -Indexes
+
+# Si des mauvais robots (spam) tombent sur le site:
+<IfModule mod_setenvif.c>
+SetEnvIfNoCase User-Agent ([a-z0-9]{2000}) bad_bot
+SetEnvIfNoCase User-Agent (archive.org|binlar|casper|checkpriv|choppy|clshttp|cmsworld|diavol|dotbot|extract|feedfinder|flicky|g00g1e|harvest|heritrix|httrack|kmccrew|loader|miner|nikto|nutch|planetwork|postrank|purebot|pycurl|python|seekerspider|siclab|skygrid|sqlmap|sucker|turnit|vikspider|winhttp|xxxyy|youda|zmeu|zune) bad_bot
+<limit GET POST PUT>
+Order Allow,Deny
+Allow from all
+Deny from env=bad_bot
+</limit>
+</IfModule>
+
+# Bloque les include-only files (force-hack de l'administration).
+<IfModule mod_rewrite.c>
+RewriteEngine On
+RewriteBase /
+RewriteRule ^wp-admin/includes/ - [F,L]
+RewriteRule !^wp-includes/ - [S=3]
+RewriteRule ^wp-includes/[^/]+.php$ - [F,L]
+RewriteRule ^wp-includes/js/tinymce/langs/.+.php - [F,L]
+RewriteRule ^wp-includes/theme-compat/ - [F,L]
+</IfModule>
+
+# Empêche le hotlinking image.(c'est à dire de linker ton image sur un autre site... tu peux l'enlever si tu veux)
+RewriteEngine on
+RewriteCond %{HTTP_REFERER} !^$
+RewriteCond %{HTTP_REFERER} !^http(s)?://(www.)?cha.graphics [NC]
+RewriteCond %{HTTP_REFERER} !^http(s)?://(www.)?cha.graphics [NC]
+RewriteRule .(jpg|jpeg|png|gif)$ http://i.imgur.com/MlQAH71.jpg [NC,R,L]
+
+# Wordfence WAF
+<Files ".user.ini">
+<IfModule mod_authz_core.c>
+	Require all denied
+</IfModule>
+<IfModule !mod_authz_core.c>
+	Order deny,allow
+	Deny from all
+</IfModule>
+</Files>
+
+# END Wordfence WAF
